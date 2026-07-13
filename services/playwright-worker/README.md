@@ -21,3 +21,15 @@ The service exposes a small versioned API:
 - `DELETE /v1/contexts/:id`
 
 Production deployments must set `NODE_ENV=production` and `OKAY_WORKER_TOKEN`, terminate TLS in front of the worker, restrict ingress to the Okay control plane, and use a sandboxed non-root container.
+
+## Verification
+
+```bash
+npm ci
+npm run check
+npm run test:unit
+npx playwright install --with-deps chromium
+npm run test:e2e
+```
+
+The live-browser test starts an isolated fixture site and verifies real Chromium navigation, semantic perception, stable handles, form input, stale-state rejection, and cross-user context isolation. GitHub Actions runs this sequence in a clean Linux environment.
