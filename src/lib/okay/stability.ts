@@ -34,10 +34,10 @@ export function startStabilityTracker(): StabilityHandle {
   }, 500);
 
   let inflight = 0;
-  globalThis.fetch = async (...args) => {
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     inflight++;
-    try { return await ORIG_FETCH(...args); } finally { inflight--; }
-  };
+    try { return await ORIG_FETCH(input, init); } finally { inflight--; }
+  }) as typeof fetch;
 
   const handle: StabilityHandle = {
     read: () => ({

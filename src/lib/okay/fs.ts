@@ -28,7 +28,7 @@ function readAll(): FileRecord[] {
 function writeAll(v: FileRecord[]) { localStorage.setItem(KEY, JSON.stringify(v)); }
 
 async function sha256(bytes: Uint8Array): Promise<string> {
-  const h = await crypto.subtle.digest("SHA-256", bytes);
+  const h = await crypto.subtle.digest("SHA-256", bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer);
   return Array.from(new Uint8Array(h)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
