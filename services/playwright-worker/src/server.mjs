@@ -112,7 +112,7 @@ async function snapshot(rec) {
           : "";
         return {
           role: html.getAttribute("role") ?? implicit[tag] ?? tag,
-          name: (html.getAttribute("aria-label") ?? labelled ?? label ?? html.textContent ?? "").trim().slice(0, 200),
+          name: (html.getAttribute("aria-label") || labelled || label || html.textContent || "").trim().slice(0, 200),
           value: "value" in html ? String(html.value ?? "") : undefined,
           visible: style.visibility !== "hidden" && style.display !== "none" && rect.width > 0 && rect.height > 0,
           enabled: !("disabled" in html && html.disabled),
