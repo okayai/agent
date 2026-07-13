@@ -21,6 +21,7 @@ const App = () => (
         <Route path="/" element={<Okay />} />
         <Route path="/functionbox" element={<FunctionBox />} />
         <Route path="/production-ready" element={<ProductionReady />} />
+        <Route path="/prod-readiness" element={<ProductionReady />} />
         <Route path="*" element={<NotFound />} />
         </Routes>
         <InstallPrompt />
