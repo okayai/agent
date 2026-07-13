@@ -1,5 +1,6 @@
-// Spec §1 & §4 — Credential broker: scoped labels + short-lived capability tokens
-// Models see labels (e.g. "work_email_account"), never values.
+// Spec §1 & §4 — Credential broker: scoped labels + short-lived capability tokens.
+// Secret values are AES-GCM encrypted at rest via ./vault; models see labels only.
+import { encryptString, decryptString } from "./vault";
 
 export type TrustDomain = "personal" | "work" | "financial" | "research" | "anonymous";
 
@@ -11,8 +12,7 @@ export interface CredentialRecord {
 }
 
 interface StoredCredential extends CredentialRecord {
-  // The actual secret is stored separately keyed by id and never exposed by list().
-  _valueRef: string; // opaque handle, not the raw value
+  _valueRef: string;
 }
 
 const KEY_INDEX = "okay:cred:index";
@@ -25,18 +25,13 @@ function writeIndex(items: StoredCredential[]) {
   localStorage.setItem(KEY_INDEX, JSON.stringify(items));
 }
 
-export function register(label: string, trustDomain: TrustDomain, secret: string): CredentialRecord {
+export async function register(label: string, trustDomain: TrustDomain, secret: string): Promise<CredentialRecord> {
   const id = crypto.randomUUID();
   const valueRef = crypto.randomUUID();
-  localStorage.setItem(KEY_VAULT_PREFIX + valueRef, secret);
-  const rec: StoredCredential = {
-    id, label, trustDomain,
-    createdAt: new Date().toISOString(),
-    _valueRef: valueRef,
-  };
-  const idx = readIndex();
-  idx.push(rec);
-  writeIndex(idx);
+  const ciphertext = await encryptString(secret);
+  localStorage.setItem(KEY_VAULT_PREFIX + valueRef, ciphertext);
+  const rec: StoredCredential = { id, label, trustDomain, createdAt: new Date().toISOString(), _valueRef: valueRef };
+  const idx = readIndex(); idx.push(rec); writeIndex(idx);
   return { id, label, trustDomain, createdAt: rec.createdAt };
 }
 
