@@ -1,6 +1,26 @@
+// Barrel — everything OKAY.
 export * from "./types";
 export * from "./riskTiers";
 export * from "./policy";
 export * as eventStore from "./eventStore";
 export * as memory from "./memory";
 export * as audit from "./audit";
+export * as gateway from "./gateway";
+export * as contextAssembler from "./contextAssembler";
+export * as credentialBroker from "./credentialBroker";
+export * as dlp from "./dlp";
+export * as injection from "./injection";
+export * as perception from "./perception";
+export * as stability from "./stability";
+export * as failure from "./failure";
+export * as idempotency from "./idempotency";
+export * as verifier from "./verifier";
+export * as orchestrator from "./orchestrator";
+export * as planners from "./planners";
+export * as fs from "./fs";
+export * as browser from "./browser";
+export * as workers from "./workers";
+export * as workflows from "./workflows";
+export * as feedback from "./feedback";
+export * as promotion from "./promotion";
+export * as metrics from "./metrics";
