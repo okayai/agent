@@ -49,11 +49,26 @@ async function ensureBrowser() {
   return browser;
 }
 
-function record(id) {
+function ownerFrom(req) {
+  const owner = req.headers["x-okay-owner"];
+  if (typeof owner !== "string" || !/^[0-9a-f-]{36}$/i.test(owner)) {
+    const error = new Error("owner_required");
+    error.status = 401;
+    throw error;
+  }
+  return owner;
+}
+
+function record(id, owner) {
   const found = contexts.get(id);
   if (!found) {
     const error = new Error("context_not_found");
     error.status = 404;
+    throw error;
+  }
+  if (found.owner !== owner) {
+    const error = new Error("context_forbidden");
+    error.status = 403;
     throw error;
   }
   return found;
@@ -190,19 +205,20 @@ const server = http.createServer(async (req, res) => {
     if (!authorized(req)) return json(res, 401, { error: "unauthorized" });
 
     if (req.method === "POST" && url.pathname === "/v1/contexts") {
+      const owner = ownerFrom(req);
       const input = await body(req);
       const instance = await ensureBrowser();
       const context = await instance.newContext({ acceptDownloads: true });
       const page = await context.newPage();
       const id = randomUUID();
-      const rec = { id, trustDomain: String(input.trustDomain ?? "research"), context, page, version: 0, elements: new Map(), handleIds: new Map() };
+      const rec = { id, owner, trustDomain: String(input.trustDomain ?? "research"), context, page, version: 0, elements: new Map(), handleIds: new Map() };
       contexts.set(id, rec);
       return json(res, 201, { context: { id, trustDomain: rec.trustDomain }, snapshot: await snapshot(rec) });
     }
 
     const match = url.pathname.match(/^\/v1\/contexts\/([^/]+)(?:\/(navigate|snapshot|actions))?$/);
     if (!match) return json(res, 404, { error: "not_found" });
-    const rec = record(match[1]);
+    const rec = record(match[1], ownerFrom(req));
     const operation = match[2];
 
     if (req.method === "GET" && operation === "snapshot") return json(res, 200, await snapshot(rec));
