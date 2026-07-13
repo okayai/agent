@@ -63,6 +63,7 @@ async function snapshot(rec) {
   const page = rec.page;
   rec.version += 1;
   rec.elements.clear();
+  const fingerprintCounts = new Map();
 
   const frames = page.frames().map((frame, index) => ({
     id: index === 0 ? "main" : `f${index}`,
@@ -101,13 +102,26 @@ async function snapshot(rec) {
           visible: style.visibility !== "hidden" && style.display !== "none" && rect.width > 0 && rect.height > 0,
           enabled: !("disabled" in html && html.disabled),
           bbox: { x: rect.x, y: rect.y, w: rect.width, h: rect.height },
+          domId: html.id || undefined,
+          tag,
         };
       }).catch(() => null);
 
       if (!data || (!data.visible && data.role !== "heading")) continue;
-      const id = randomUUID();
-      rec.elements.set(id, { locator, frameIndex, version: rec.version });
-      elements.push({ id, ...data, frameId: frameIndex === 0 ? undefined : `f${frameIndex}` });
+      const baseFingerprint = [
+        frame.url(), data.tag, data.role, data.name, data.domId ?? "",
+      ].join("\\u001f");
+      const occurrence = fingerprintCounts.get(baseFingerprint) ?? 0;
+      fingerprintCounts.set(baseFingerprint, occurrence + 1);
+      const fingerprint = `${baseFingerprint}\\u001f${occurrence}`;
+      let id = rec.handleIds.get(fingerprint);
+      if (!id) {
+        id = randomUUID();
+        rec.handleIds.set(fingerprint, id);
+      }
+      rec.elements.set(id, { locator, frameIndex, version: rec.version, fingerprint });
+      const { domId: _domId, tag: _tag, ...semantic } = data;
+      elements.push({ id, ...semantic, frameId: frameIndex === 0 ? undefined : `f${frameIndex}` });
     }
   }
 
@@ -117,6 +131,14 @@ async function snapshot(rec) {
 
   const modalLocator = page.locator('[role="dialog"][aria-modal="true"]').first();
   const modalVisible = await modalLocator.isVisible().catch(() => false);
+
+  if (rec.handleIds.size > 5_000) {
+    const active = new Set([...rec.elements.values()].map((element) => element.fingerprint));
+    for (const fingerprint of rec.handleIds.keys()) {
+      if (!active.has(fingerprint)) rec.handleIds.delete(fingerprint);
+      if (rec.handleIds.size <= 4_000) break;
+    }
+  }
 
   return {
     page: { url: page.url(), title: await page.title(), state_version: rec.version },
@@ -173,7 +195,7 @@ const server = http.createServer(async (req, res) => {
       const context = await instance.newContext({ acceptDownloads: true });
       const page = await context.newPage();
       const id = randomUUID();
-      const rec = { id, trustDomain: String(input.trustDomain ?? "research"), context, page, version: 0, elements: new Map() };
+      const rec = { id, trustDomain: String(input.trustDomain ?? "research"), context, page, version: 0, elements: new Map(), handleIds: new Map() };
       contexts.set(id, rec);
       return json(res, 201, { context: { id, trustDomain: rec.trustDomain }, snapshot: await snapshot(rec) });
     }
