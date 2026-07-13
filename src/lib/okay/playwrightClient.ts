@@ -1,55 +1,37 @@
+import { supabase } from "@/integrations/supabase/client";
 import type { BrowserAction, BrowserContext, BrowserWorker } from "./browser";
 import type { PageSnapshot } from "./perception";
-
-export interface PlaywrightWorkerClientOptions {
-  baseUrl: string;
-  token: string;
-  fetchImpl?: typeof fetch;
-}
 
 interface ContextResponse {
   context: { id: string; trustDomain: string };
   snapshot: PageSnapshot;
 }
 
+type Invoke = (
+  functionName: string,
+  options: { body: Record<string, unknown> },
+) => Promise<{ data: unknown; error: { message?: string } | null }>;
+
 export class PlaywrightWorkerClient implements BrowserWorker {
-  private readonly baseUrl: string;
-  private readonly token: string;
-  private readonly request: typeof fetch;
+  private readonly invoke: Invoke;
 
-  constructor(options: PlaywrightWorkerClientOptions) {
-    this.baseUrl = options.baseUrl.replace(/\/$/, "");
-    this.token = options.token;
-    this.request = options.fetchImpl ?? fetch;
+  constructor(invoke: Invoke = (name, options) => supabase.functions.invoke(name, options)) {
+    this.invoke = invoke;
   }
 
-  private async call<T>(path: string, init: RequestInit = {}): Promise<T> {
-    const response = await this.request(`${this.baseUrl}${path}`, {
-      ...init,
-      headers: {
-        authorization: `Bearer ${this.token}`,
-        "content-type": "application/json",
-        ...init.headers,
-      },
-    });
-
-    const payload = await response.json().catch(() => ({ error: "invalid_worker_response" }));
-    if (!response.ok) {
-      throw new Error(typeof payload?.error === "string" ? payload.error : `worker_http_${response.status}`);
+  private async call<T>(body: Record<string, unknown>): Promise<T> {
+    const { data, error } = await this.invoke("okay-browser", { body });
+    if (error) throw new Error(error.message ?? "browser_gateway_error");
+    if (data && typeof data === "object" && "error" in data) {
+      throw new Error(String((data as { error: unknown }).error));
     }
-    return payload as T;
-  }
-
-  async health(): Promise<{ ok: boolean; browserConnected: boolean; contexts: number }> {
-    return this.call("/health");
+    return data as T;
   }
 
   async newContext(trustDomain: string): Promise<BrowserContext> {
-    const response = await this.call<ContextResponse>("/v1/contexts", {
-      method: "POST",
-      body: JSON.stringify({ trustDomain }),
-    });
-    // Secret-bearing cookies and storage state intentionally remain in the worker.
+    const response = await this.call<ContextResponse>({ operation: "create", trustDomain });
+    // Cookies, storage state, worker address, and worker credentials never enter
+    // the browser bundle. They remain behind the authenticated gateway.
     return {
       id: response.context.id,
       trustDomain: response.context.trustDomain,
@@ -59,27 +41,21 @@ export class PlaywrightWorkerClient implements BrowserWorker {
   }
 
   async navigate(context: BrowserContext, url: string): Promise<PageSnapshot> {
-    return this.call(`/v1/contexts/${encodeURIComponent(context.id)}/navigate`, {
-      method: "POST",
-      body: JSON.stringify({ url }),
-    });
+    return this.call({ operation: "navigate", contextId: context.id, url });
   }
 
   async perceive(context: BrowserContext): Promise<PageSnapshot> {
-    return this.call(`/v1/contexts/${encodeURIComponent(context.id)}/snapshot`);
+    return this.call({ operation: "snapshot", contextId: context.id });
   }
 
   async act(
     context: BrowserContext,
     action: BrowserAction,
   ): Promise<{ ok: boolean; newSnapshot: PageSnapshot; error?: string }> {
-    return this.call(`/v1/contexts/${encodeURIComponent(context.id)}/actions`, {
-      method: "POST",
-      body: JSON.stringify(action),
-    });
+    return this.call({ operation: "action", contextId: context.id, action });
   }
 
   async close(context: BrowserContext): Promise<void> {
-    await this.call(`/v1/contexts/${encodeURIComponent(context.id)}`, { method: "DELETE" });
+    await this.call({ operation: "close", contextId: context.id });
   }
 }
