@@ -7,6 +7,7 @@ import Okay from "./pages/Okay";
 import NotFound from "./pages/NotFound";
 import InstallPrompt from "./components/InstallPrompt";
 import FunctionBox from "./pages/FunctionBox";
+import ProductionReady from "./pages/ProductionReady";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ const App = () => (
         <Routes>
         <Route path="/" element={<Okay />} />
         <Route path="/functionbox" element={<FunctionBox />} />
+        <Route path="/production-ready" element={<ProductionReady />} />
         <Route path="*" element={<NotFound />} />
         </Routes>
         <InstallPrompt />
