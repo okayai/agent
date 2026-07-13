@@ -8,7 +8,7 @@ const PATTERNS: { re: RegExp; label: string }[] = [
   { re: /(?:paste|share|send|reveal)[^.\n]{0,40}(api key|password|secret|token)/i, label: "secret_exfil" },
   { re: /disregard.{0,40}(rules|policy|user)/i, label: "policy_bypass" },
   { re: /you are (now )?(a|an) [a-z ]{0,40}(admin|root|developer|jailbroken)/i, label: "role_hijack" },
-  { re: /</?script/i, label: "script_tag" },
+  { re: /<\/?script/i, label: "script_tag" },
   { re: /data:text\/html/i, label: "data_url" },
   { re: /base64.{0,20}(eval|exec|decode)/i, label: "obfuscated_exec" },
 ];
