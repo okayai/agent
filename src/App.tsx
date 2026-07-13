@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import InstallPrompt from "./components/InstallPrompt";
 import FunctionBox from "./pages/FunctionBox";
 import ProductionReady from "./pages/ProductionReady";
+import MemoryConsole from "./pages/MemoryConsole";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
         <Route path="/functionbox" element={<FunctionBox />} />
         <Route path="/production-ready" element={<ProductionReady />} />
         <Route path="/prod-readiness" element={<ProductionReady />} />
+        <Route path="/memory" element={<MemoryConsole />} />
         <Route path="*" element={<NotFound />} />
         </Routes>
         <InstallPrompt />

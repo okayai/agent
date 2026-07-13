@@ -24,3 +24,6 @@ export * as workflows from "./workflows";
 export * as feedback from "./feedback";
 export * as promotion from "./promotion";
 export * as metrics from "./metrics";
+export * as executionRouter from "./executionRouter";
+export * as testgen from "./testgen";
+export * as vault from "./vault";

@@ -74,8 +74,8 @@ export function mintToken(credential_id: string, capability: string, ttlSec = 60
   return t;
 }
 
-// Redeem — returns the secret ONCE for a worker, then invalidates the token.
-export function redeem(token: string): string | null {
+// Redeem — returns the decrypted secret ONCE for a worker, then invalidates the token.
+export async function redeem(token: string): Promise<string | null> {
   const tokens = readTokens();
   const idx = tokens.findIndex((t) => t.token === token);
   if (idx === -1) return null;
@@ -86,5 +86,7 @@ export function redeem(token: string): string | null {
   tokens.splice(idx, 1); writeTokens(tokens);
   const rec = readIndex().find((c) => c.id === t.credential_id);
   if (!rec) return null;
-  return localStorage.getItem(KEY_VAULT_PREFIX + rec._valueRef);
+  const ct = localStorage.getItem(KEY_VAULT_PREFIX + rec._valueRef);
+  if (!ct) return null;
+  try { return await decryptString(ct); } catch { return null; }
 }
