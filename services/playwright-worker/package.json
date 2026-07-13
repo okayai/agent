@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node src/server.mjs",
     "check": "node --check src/server.mjs && node --check src/protocol.mjs",
-    "test": "node --test test/*.test.mjs"
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "node --test test/protocol.test.mjs",
+    "test:e2e": "node --test test/browser.e2e.test.mjs"
   },
   "dependencies": {
     "playwright": "1.61.1"
