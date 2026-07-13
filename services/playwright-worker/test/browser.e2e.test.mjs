@@ -5,6 +5,7 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 
 const token = "integration-token";
+const owner = "11111111-1111-4111-8111-111111111111";
 const fixturePort = 18741;
 const workerPort = 18742;
 
@@ -30,6 +31,7 @@ async function request(path, init = {}) {
     headers: {
       authorization: `Bearer ${token}`,
       "content-type": "application/json",
+      "x-okay-owner": owner,
       ...init.headers,
     },
   });
@@ -113,6 +115,11 @@ test("real Chromium context navigates, perceives, acts, and rejects stale state"
   const typedInput = typed.newSnapshot.elements.find((element) => element.name === "Passenger name");
   assert.equal(typedInput?.value, "Casey");
   assert.equal(typedInput?.id, refreshedInput.id, "semantic handle should remain stable across snapshots");
+
+  const forbidden = await fetch(`http://127.0.0.1:${workerPort}/v1/contexts/${contextId}/snapshot`, {
+    headers: { authorization: `Bearer ${token}`, "x-okay-owner": "22222222-2222-4222-8222-222222222222" },
+  });
+  assert.equal(forbidden.status, 403, "another owner must not access the context");
 
   await request(`/v1/contexts/${contextId}`, { method: "DELETE" });
 });
