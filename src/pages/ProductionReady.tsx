@@ -129,6 +129,19 @@ const sections: Section[] = [
   },
 ];
 
+const playwrightProduction: Feature[] = [
+  { name: "Typed Playwright worker protocol", status: "done", note: "BrowserWorker contract defines versioned contexts, snapshots, actions, and teardown" },
+  { name: "Isolated Playwright worker service", status: "missing", note: "Dedicated Node process with browser/context/page registries" },
+  { name: "Chromium + CDP lifecycle management", status: "missing", note: "Launch, health checks, graceful shutdown, and crash recovery" },
+  { name: "Per-page state versions and stable element handles", status: "partial", note: "Stale-state rejection exists; handles still need worker-scoped persistence" },
+  { name: "Semantic DOM and accessibility snapshots", status: "partial", note: "Snapshot compiler exists in-browser; migration into Playwright frames is pending" },
+  { name: "Reliable click, type, select, navigate, and wait actions", status: "missing", note: "Locator preconditions and semantic post-action verification required" },
+  { name: "SPA, popup, iframe, modal, and download handling", status: "partial", note: "Detection contracts exist; Playwright event integration is pending" },
+  { name: "Per-trust-domain context and session persistence", status: "partial", note: "Trust-domain contract exists; encrypted server-side storage state is pending" },
+  { name: "Trace, screenshot, console, and network evidence", status: "missing", note: "Required for independent verification and failure diagnosis" },
+  { name: "Controlled-site Playwright E2E suite", status: "missing", note: "Must cover stale handles, overlays, hydration, popups, frames, and duplicate-side-effect prevention" },
+];
+
 const weight: Record<Status, number> = { done: 1, partial: 0.4, missing: 0 };
 
 const StatusIcon = ({ status }: { status: Status }) => {
@@ -141,6 +154,14 @@ const ProductionReady = () => {
   const all = sections.flatMap((s) => s.features);
   const score = all.reduce((sum, f) => sum + weight[f.status], 0);
   const percent = Math.round((score / all.length) * 100);
+  const playwrightScore = playwrightProduction.reduce((sum, f) => sum + weight[f.status], 0);
+  const productionPercent = Math.round((playwrightScore / playwrightProduction.length) * 100);
+  const productionCounts = {
+    done: playwrightProduction.filter((f) => f.status === "done").length,
+    partial: playwrightProduction.filter((f) => f.status === "partial").length,
+    missing: playwrightProduction.filter((f) => f.status === "missing").length,
+  };
+
   const counts = {
     done: all.filter((f) => f.status === "done").length,
     partial: all.filter((f) => f.status === "partial").length,
@@ -200,9 +221,64 @@ const ProductionReady = () => {
               <span className="text-muted-foreground">· {all.length} tracked features</span>
             </div>
           </div>
+
+          <div className="mt-4 cosmic-card p-6 rounded-2xl border border-primary/30 bg-card/60 backdrop-blur">
+            <div className="flex items-start justify-between gap-4 mb-3">
+              <div>
+                <span className="font-mono text-sm text-primary">PLAYWRIGHT PRODUCTION</span>
+                <p className="text-xs text-muted-foreground mt-1">Physical browser execution readiness</p>
+              </div>
+              <span className="font-display text-3xl font-bold tabular-nums">
+                {productionPercent}
+                <span className="text-lg text-muted-foreground">/100</span>
+              </span>
+            </div>
+            <div
+              className="h-3 w-full rounded-full bg-secondary overflow-hidden"
+              role="progressbar"
+              aria-label="Playwright production readiness"
+              aria-valuenow={productionPercent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <div
+                className="h-full bg-primary transition-[width] duration-700 ease-out"
+                style={{ width: `${productionPercent}%` }}
+              />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-4 text-xs font-mono">
+              <span className="inline-flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-success" /> {productionCounts.done} done</span>
+              <span className="inline-flex items-center gap-1.5"><CircleDashed className="w-3.5 h-3.5 text-warning" /> {productionCounts.partial} partial</span>
+              <span className="inline-flex items-center gap-1.5"><X className="w-3.5 h-3.5 text-muted-foreground/60" /> {productionCounts.missing} missing</span>
+            </div>
+          </div>
         </header>
 
         <div className="space-y-8">
+          <section>
+            <div className="flex items-baseline justify-between mb-3">
+              <h2 className="font-display text-xl font-semibold">Playwright Production Track</h2>
+              <span className="font-mono text-xs text-muted-foreground">Execution host · {productionPercent}%</span>
+            </div>
+            <ul className="rounded-xl border border-primary/25 divide-y divide-border overflow-hidden bg-card/40">
+              {playwrightProduction.map((f) => (
+                <li key={f.name} className={cn("flex items-start gap-3 px-4 py-3", f.status === "missing" && "opacity-70")}>
+                  <span className="mt-0.5 shrink-0"><StatusIcon status={f.status} /></span>
+                  <div className="flex-1 min-w-0">
+                    <p className={cn("text-sm", f.status === "done" && "line-through decoration-success/50")}>{f.name}</p>
+                    {f.note && <p className="text-xs text-muted-foreground mt-0.5">{f.note}</p>}
+                  </div>
+                  <span className={cn(
+                    "font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded shrink-0",
+                    f.status === "done" && "bg-success/15 text-success",
+                    f.status === "partial" && "bg-warning/15 text-warning",
+                    f.status === "missing" && "bg-muted text-muted-foreground"
+                  )}>{f.status}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
           {sections.map((section) => {
             const total = section.features.length;
             const local = Math.round(
