@@ -22,7 +22,7 @@ export class PlaywrightWorkerClient implements BrowserWorker {
   private async call<T>(body: Record<string, unknown>): Promise<T> {
     const { data, error } = await this.invoke("okay-browser", { body });
     if (error) throw new Error(error.message ?? "browser_gateway_error");
-    if (data && typeof data === "object" && "error" in data) {
+    if (data && typeof data === "object" && "error" in data && !("ok" in data)) {
       throw new Error(String((data as { error: unknown }).error));
     }
     return data as T;
