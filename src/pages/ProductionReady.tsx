@@ -133,13 +133,13 @@ const playwrightProduction: Feature[] = [
   { name: "Typed Playwright worker protocol", status: "done", note: "BrowserWorker contract defines versioned contexts, snapshots, actions, and teardown" },
   { name: "Isolated Playwright worker service", status: "partial", note: "Node service now owns browser/context/page registries; deployment hardening remains" },
   { name: "Chromium + CDP lifecycle management", status: "partial", note: "Lazy Chromium launch, health endpoint, disconnect cleanup, and graceful shutdown shipped; CDP supervision remains" },
-  { name: "Per-page state versions and stable element handles", status: "partial", note: "Stale-state rejection exists; handles still need worker-scoped persistence" },
+  { name: "Per-page state versions and stable element handles", status: "done", note: "Worker-scoped versions reject stale actions; semantic fingerprints preserve handles across snapshots" },
   { name: "Semantic DOM and accessibility snapshots", status: "partial", note: "Snapshot compiler exists in-browser; migration into Playwright frames is pending" },
   { name: "Reliable click, type, select, navigate, and wait actions", status: "partial", note: "Initial locator-backed executor ships with visibility waits and stale rejection; semantic post-action assertions remain" },
   { name: "SPA, popup, iframe, modal, and download handling", status: "partial", note: "Detection contracts exist; Playwright event integration is pending" },
   { name: "Per-trust-domain context and session persistence", status: "partial", note: "Trust-domain contract exists; encrypted server-side storage state is pending" },
   { name: "Trace, screenshot, console, and network evidence", status: "missing", note: "Required for independent verification and failure diagnosis" },
-  { name: "Controlled-site Playwright E2E suite", status: "missing", note: "Must cover stale handles, overlays, hydration, popups, frames, and duplicate-side-effect prevention" },
+  { name: "Controlled-site Playwright E2E suite", status: "partial", note: "Live Chromium fixture covers context, navigation, perception, typing, stable handles, and stale rejection; advanced cases remain" },
 ];
 
 const weight: Record<Status, number> = { done: 1, partial: 0.4, missing: 0 };
