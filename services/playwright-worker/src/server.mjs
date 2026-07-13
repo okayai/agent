@@ -1,10 +1,12 @@
 import http from "node:http";
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import { chromium } from "playwright";
+import { assertNavigationUrl, parseAction } from "./protocol.mjs";
 
 const port = Number(process.env.PORT ?? 8787);
 const token = process.env.OKAY_WORKER_TOKEN ?? "";
 const headless = process.env.HEADLESS !== "false";
+const allowPrivateNetwork = process.env.OKAY_ALLOW_PRIVATE_NETWORK === "true";
 const contexts = new Map();
 let browser;
 
@@ -136,7 +138,7 @@ async function act(rec, action) {
   }
 
   if (action.kind === "navigate") {
-    await rec.page.goto(action.url, { waitUntil: "domcontentloaded", timeout: 30_000 });
+    await rec.page.goto(assertNavigationUrl(action.url, { allowPrivateNetwork }), { waitUntil: "domcontentloaded", timeout: 30_000 });
   } else if (action.kind === "wait") {
     await rec.page.waitForTimeout(Math.min(Number(action.timeout_ms ?? 250), 5_000));
   } else if (action.kind === "screenshot") {
@@ -184,10 +186,10 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "GET" && operation === "snapshot") return json(res, 200, await snapshot(rec));
     if (req.method === "POST" && operation === "navigate") {
       const input = await body(req);
-      await rec.page.goto(String(input.url), { waitUntil: "domcontentloaded", timeout: 30_000 });
+      await rec.page.goto(assertNavigationUrl(String(input.url), { allowPrivateNetwork }), { waitUntil: "domcontentloaded", timeout: 30_000 });
       return json(res, 200, await snapshot(rec));
     }
-    if (req.method === "POST" && operation === "actions") return json(res, 200, await act(rec, await body(req)));
+    if (req.method === "POST" && operation === "actions") return json(res, 200, await act(rec, parseAction(await body(req))));
     if (req.method === "DELETE" && !operation) {
       await rec.context.close();
       contexts.delete(rec.id);
