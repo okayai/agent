@@ -1,0 +1,278 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Silulo Cosmic Design System */
+    --background: 222 47% 11%;
+    --foreground: 0 0% 100%;
+
+    --card: 222 47% 14%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 191 100% 50%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 222 47% 18%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 222 30% 20%;
+    --muted-foreground: 210 20% 70%;
+
+    --accent: 191 90% 76%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 47% 11%;
+
+    --border: 222 30% 25%;
+    --input: 222 30% 20%;
+    --ring: 191 100% 50%;
+
+    --radius: 0.75rem;
+
+    /* Custom Silulo tokens */
+    --navy-deep: 222 47% 11%;
+    --navy-medium: 222 47% 14%;
+    --navy-light: 222 47% 18%;
+    --electric-blue: 191 100% 50%;
+    --soft-cyan: 191 90% 76%;
+    --cosmic-white: 0 0% 100%;
+    --star-glow: 191 100% 50%;
+    
+    /* Gradients */
+    --gradient-cosmic: linear-gradient(135deg, hsl(222 47% 11%) 0%, hsl(222 47% 18%) 100%);
+    --gradient-glow: linear-gradient(135deg, hsl(191 100% 50%) 0%, hsl(191 90% 76%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(222 47% 16%) 0%, hsl(222 47% 12%) 100%);
+    
+    /* Shadows */
+    --shadow-glow: 0 0 30px hsl(191 100% 50% / 0.3);
+    --shadow-card: 0 8px 32px hsl(222 47% 5% / 0.5);
+    --shadow-button: 0 4px 20px hsl(191 100% 50% / 0.4);
+
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 191 100% 50%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 222 47% 18%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 222 30% 25%;
+    --sidebar-ring: 191 100% 50%;
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 0 0% 100%;
+    --card: 222 47% 14%;
+    --card-foreground: 0 0% 100%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 191 100% 50%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 222 47% 18%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 222 30% 20%;
+    --muted-foreground: 210 20% 70%;
+    --accent: 191 90% 76%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 30% 25%;
+    --input: 222 30% 20%;
+    --ring: 191 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  code, kbd, pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer components {
+  /* Cosmic glow effects */
+  .glow-primary {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .glow-text {
+    text-shadow: 0 0 20px hsl(var(--electric-blue) / 0.5);
+  }
+
+  /* Star field background */
+  .star-field {
+    background-image: 
+      radial-gradient(2px 2px at 20px 30px, hsl(var(--cosmic-white) / 0.8), transparent),
+      radial-gradient(2px 2px at 40px 70px, hsl(var(--soft-cyan) / 0.6), transparent),
+      radial-gradient(1px 1px at 90px 40px, hsl(var(--cosmic-white) / 0.5), transparent),
+      radial-gradient(2px 2px at 130px 80px, hsl(var(--electric-blue) / 0.4), transparent),
+      radial-gradient(1px 1px at 160px 120px, hsl(var(--cosmic-white) / 0.6), transparent),
+      radial-gradient(2px 2px at 200px 50px, hsl(var(--soft-cyan) / 0.5), transparent),
+      radial-gradient(1px 1px at 250px 160px, hsl(var(--cosmic-white) / 0.4), transparent),
+      radial-gradient(2px 2px at 300px 100px, hsl(var(--electric-blue) / 0.3), transparent);
+    background-size: 350px 200px;
+    background-position: 0 0;
+    animation: twinkle 8s ease-in-out infinite;
+  }
+
+  /* Cosmic card styles */
+  .cosmic-card {
+    background: var(--gradient-card);
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-card);
+    backdrop-filter: blur(10px);
+  }
+
+  /* Keyboard key styles */
+  .keyboard-key {
+    @apply inline-flex items-center justify-center rounded-md px-2 py-1 text-xs font-mono;
+    background: linear-gradient(180deg, hsl(var(--navy-light)) 0%, hsl(var(--navy-medium)) 100%);
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 2px 4px hsl(var(--navy-deep) / 0.5), inset 0 1px 0 hsl(var(--cosmic-white) / 0.1);
+  }
+
+  .keyboard-key:hover {
+    background: linear-gradient(180deg, hsl(var(--navy-medium)) 0%, hsl(var(--navy-light)) 100%);
+    box-shadow: 0 0 12px hsl(var(--electric-blue) / 0.5);
+  }
+
+  /* Planet hover effect */
+  .planet-glow {
+    transition: all 0.3s ease;
+  }
+
+  .planet-glow:hover {
+    filter: drop-shadow(0 0 20px hsl(var(--electric-blue) / 0.6));
+    transform: scale(1.05);
+  }
+
+  /* Navigation link styles */
+  .nav-link {
+    @apply relative px-4 py-2 text-muted-foreground transition-all duration-300;
+  }
+
+  .nav-link::after {
+    content: '';
+    @apply absolute bottom-0 left-1/2 h-0.5 w-0 -translate-x-1/2 rounded-full transition-all duration-300;
+    background: hsl(var(--electric-blue));
+    box-shadow: 0 0 10px hsl(var(--electric-blue) / 0.5);
+  }
+
+  .nav-link:hover,
+  .nav-link.active {
+    @apply text-foreground;
+  }
+
+  .nav-link:hover::after,
+  .nav-link.active::after {
+    @apply w-full;
+  }
+
+  /* Orbit path animation */
+  .orbit-path {
+    stroke-dasharray: 5 5;
+    animation: orbit-rotate 30s linear infinite;
+  }
+}
+
+@layer utilities {
+  /* Text gradient utility */
+  .text-gradient-cosmic {
+    background: linear-gradient(135deg, hsl(var(--cosmic-white)) 0%, hsl(var(--soft-cyan)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-glow {
+    background: linear-gradient(135deg, hsl(var(--electric-blue)) 0%, hsl(var(--soft-cyan)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* Keyframe animations */
+@keyframes twinkle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 0 20px hsl(var(--electric-blue) / 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 40px hsl(var(--electric-blue) / 0.6);
+  }
+}
+
+@keyframes orbit-rotate {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: 100; }
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes data-stream {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100%; }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-scan {
+  animation: scan-line 8s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(2px, -2px); }
+}
+.animate-drift {
+  animation: drift 4s ease-in-out infinite;
+}
