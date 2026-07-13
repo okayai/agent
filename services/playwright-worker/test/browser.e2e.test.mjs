@@ -110,7 +110,9 @@ test("real Chromium context navigates, perceives, acts, and rejects stale state"
     }),
   });
   assert.equal(typed.ok, true);
-  assert.equal(typed.newSnapshot.elements.find((element) => element.name === "Passenger name")?.value, "Casey");
+  const typedInput = typed.newSnapshot.elements.find((element) => element.name === "Passenger name");
+  assert.equal(typedInput?.value, "Casey");
+  assert.equal(typedInput?.id, refreshedInput.id, "semantic handle should remain stable across snapshots");
 
   await request(`/v1/contexts/${contextId}`, { method: "DELETE" });
 });
